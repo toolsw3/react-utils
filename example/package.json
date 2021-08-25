@@ -1,0 +1,18 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx parcel ./index.html"
+  },
+  "author": "W3",
+  "license": "ISC",
+  "alias": {
+    "react": "../node_modules/react",
+    "react-dom": "../node_modules/react-dom/profiling"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5"
+  }
+}
