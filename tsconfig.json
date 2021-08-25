@@ -17,6 +17,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src"],
+  "include": ["src/index.ts"],
   "exclude": ["node_modules", "lib"]
 }
