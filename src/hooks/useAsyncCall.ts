@@ -16,6 +16,7 @@ function useAsyncCall(asyncCall: () => Promise<any>) {
   const [{ response, responseError, isLoading }, setFetchState] = useState<FetchState>(initialFetchState);
 
   useEffect(() => {
+    let isMounted = true;
     setFetchState({
       isLoading: true,
       response: null,
@@ -24,21 +25,27 @@ function useAsyncCall(asyncCall: () => Promise<any>) {
     const makeCall = async () => {
       try {
         const response = await asyncCall();
-        
-        setFetchState({
-          isLoading: false,
-          response,
-          responseError: null,
-        });
+        if (isMounted) {
+          setFetchState({
+            isLoading: false,
+            response,
+            responseError: null,
+          });
+        }
       } catch (error) {
-        setFetchState({
-          isLoading: false,
-          response: null,
-          responseError: error,
-        });
+        if (isMounted) {
+          setFetchState({
+            isLoading: false,
+            response: null,
+            responseError: error,
+          });
+        }
       }
     };
     makeCall();
+    return () => {
+      isMounted = false;
+    }
   }, [asyncCall]);
 
   return { response, responseError, isLoading };
