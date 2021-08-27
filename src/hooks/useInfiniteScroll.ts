@@ -1,30 +1,72 @@
-import { MutableRefObject, useCallback, useEffect, useState } from 'react';
-import useAsyncCall from './useAsyncCall';
+import { MutableRefObject, useEffect, useRef } from 'react';
+import useLoadPromise, { Reset, SetHasReachEnd } from '../utils/useLoadPromise';
 import useIntersectionObserver from './useIntersectionObserver';
 
-function useInfiniteScroll (targetRef: MutableRefObject<Element | null>, onLoad: any, evaluateEnd: any, limit = 10, initialPage = 1, offset = 50) {
-    const [page, setPage] = useState(initialPage);
-    const [hasReachEnd, setHasReachEnd] = useState(false);
-    const options: IntersectionObserverInit = { rootMargin: `0px 0px ${offset}px 0px` };
-    const isIntersecting = useIntersectionObserver(targetRef, options);
+interface InfiniteScrollArgs<TResponse> {
+  onLoad: (page: number, limit?: number) => Promise<TResponse>;
+  evaluateEnd: (response: TResponse, setHasReachEnd: SetHasReachEnd) => void;
+  limit?: number;
+  initialPage?: number;
+  offset?: number;
+}
 
-    const asyncCall = useCallback(() => {
-      return onLoad(page, limit)
-    }, [page, limit]);
+interface InfiniteScrollReturn<TResponse> {
+  isLoading: boolean;
+  response: TResponse | null;
+  reset: Reset;
+  ref: MutableRefObject<null>;
+  error: Error | null;
+}
 
-    const { isLoading, response } = useAsyncCall(asyncCall);
+/**
+ * 
+ * @param onLoad Description from onLoad 
+ * @returns 
+ */
+function useInfiniteScroll<TResponse>({
+  onLoad,
+  evaluateEnd,
+  limit = 10,
+  initialPage = 1,
+  offset = 50,
+}: InfiniteScrollArgs<TResponse>): InfiniteScrollReturn<TResponse> {
+  const targetRef = useRef(null);
+  const options: IntersectionObserverInit = {
+    rootMargin: `0px 0px ${offset}px 0px`,
+  };
+  const isVisible = useIntersectionObserver(targetRef, options);
 
-    useEffect(() => {
-      isIntersecting && !isLoading && !hasReachEnd && setPage((prevPage) => prevPage + 1);
-    }, [isIntersecting]);
+  const {
+    isLoading,
+    error,
+    setPage,
+    loadPromise,
+    response,
+    hasReachEnd,
+    reset,
+  } = useLoadPromise<TResponse>({
+    load: onLoad,
+    initialPage,
+    limit,
+    evaluateEnd,
+  });
 
-    useEffect(() => {
-      if (response && evaluateEnd) {
-        evaluateEnd(response, page, setHasReachEnd);
-      }
-    }, [response, evaluateEnd, page]);
+  const shouldFetch = isVisible && !isLoading && !hasReachEnd;
 
-    return { isLoading, response, setPage };
+  useEffect(() => {
+    if (shouldFetch) {
+      loadPromise();
+      setPage((prev) => prev + 1);
+    }
+  }, [shouldFetch, loadPromise, setPage]);
+
+  return {
+    isLoading,
+    response,
+    ref: targetRef,
+    error,
+    reset,
+  };
 }
 
 export default useInfiniteScroll;
