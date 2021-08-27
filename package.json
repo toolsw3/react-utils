@@ -1,8 +1,8 @@
 {
   "name": "@w3itsolutions/w3-react-utils",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utils for react",
-  "main": "lib/esm/index.js",
+  "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
