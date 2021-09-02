@@ -7,7 +7,7 @@
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
